@@ -1,0 +1,173 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Nextcloud",
+        "description": "Enter the URL of your Nextcloud instance and how you want to authenticate.",
+        "data": {
+          "url": "Nextcloud URL",
+          "auth_method": "Authentication method",
+          "verify_ssl": "Verify SSL certificate"
+        },
+        "data_description": {
+          "auth_method": "Use a user + app password for full access, or a public share link shared by the Shopping List app.",
+          "url": "For example https://cloud.example.com"
+        }
+      },
+      "account": {
+        "title": "Nextcloud account",
+        "description": "Sign in with your Nextcloud username and an app password (Nextcloud → Personal settings → App passwords).",
+        "data": {
+          "username": "Username",
+          "password": "App password"
+        }
+      },
+      "share": {
+        "title": "Public share link",
+        "description": "Paste the share link of a shopping list (or just the token). The link password is only needed for protected shares.",
+        "data": {
+          "token": "Share link or token",
+          "share_password": "Share password"
+        }
+      },
+      "lists": {
+        "title": "Choose shopping lists",
+        "description": "Select the lists you want to import into Home Assistant. You can change this later in the integration options.",
+        "data": {
+          "list_ids": "Lists"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate",
+        "description": "Nextcloud rejected the stored credentials. Please enter them again.",
+        "data": {
+          "username": "Username",
+          "password": "App password",
+          "token": "Share link or token",
+          "share_password": "Share password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Nextcloud",
+      "invalid_auth": "Invalid username or app password",
+      "app_not_installed": "The Shopping List app is not installed or enabled on this server",
+      "share_not_found": "Share link not found or expired",
+      "share_password_required": "This share link requires a password",
+      "share_read_only": "This share link is read-only",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This Nextcloud account is already configured",
+      "reauth_successful": "Re-authentication was successful"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HANC Shopping List options",
+        "description": "Choose which lists to sync and how often to poll Nextcloud.",
+        "data": {
+          "list_ids": "Lists",
+          "scan_interval": "Polling interval (seconds)"
+        },
+        "data_description": {
+          "scan_interval": "How often Home Assistant asks Nextcloud for updates, between 10 and 600 seconds."
+        }
+      }
+    }
+  },
+  "selector": {
+    "auth_method": {
+      "options": {
+        "account": "Nextcloud account (user + app password)",
+        "share_link": "Public share link"
+      }
+    }
+  },
+  "services": {
+    "add_item": {
+      "name": "Add item",
+      "description": "Adds an item to one of the synced shopping lists.",
+      "fields": {
+        "entity_id": {
+          "name": "List",
+          "description": "The todo entity of the shopping list.",
+          "selector": {
+            "entity": {
+              "integration": "hanc_shopping_list",
+              "domain": "todo"
+            }
+          }
+        },
+        "name": {
+          "name": "Name",
+          "description": "Name of the item, for example \"Milk\".",
+          "selector": {
+            "text": {}
+          }
+        },
+        "quantity": {
+          "name": "Quantity",
+          "description": "Quantity of the item, for example \"2\". Defaults to 1.",
+          "selector": {
+            "text": {}
+          }
+        },
+        "unit": {
+          "name": "Unit",
+          "description": "Unit of the item, for example \"kg\".",
+          "selector": {
+            "text": {}
+          }
+        },
+        "area": {
+          "name": "Shop area",
+          "description": "Name of an existing shop area (aisle) of that list, for example \"Supermarket\".",
+          "selector": {
+            "text": {}
+          }
+        },
+        "checked": {
+          "name": "Checked",
+          "description": "Add the item already checked off.",
+          "selector": {
+            "boolean": {}
+          }
+        }
+      }
+    },
+    "clear_checked": {
+      "name": "Clear checked items",
+      "description": "Deletes all checked items from the list. Only available when connected with an account.",
+      "fields": {
+        "entity_id": {
+          "name": "List",
+          "description": "The todo entity of the shopping list.",
+          "selector": {
+            "entity": {
+              "integration": "hanc_shopping_list",
+              "domain": "todo"
+            }
+          }
+        }
+      }
+    },
+    "uncheck_all": {
+      "name": "Uncheck all items",
+      "description": "Unchecks every item on the list. Only available when connected with an account.",
+      "fields": {
+        "entity_id": {
+          "name": "List",
+          "description": "The todo entity of the shopping list.",
+          "selector": {
+            "entity": {
+              "integration": "hanc_shopping_list",
+              "domain": "todo"
+            }
+          }
+        }
+      }
+    }
+  }
+}

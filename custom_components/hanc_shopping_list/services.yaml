@@ -1,0 +1,48 @@
+add_item:
+  fields:
+    entity_id:
+      required: true
+      example: todo.groceries
+      selector:
+        entity:
+          integration: hanc_shopping_list
+          domain: todo
+    name:
+      required: true
+      example: Milk
+      selector:
+        text:
+    quantity:
+      example: "2"
+      selector:
+        text:
+    unit:
+      example: kg
+      selector:
+        text:
+    area:
+      example: Supermarket
+      selector:
+        text:
+    checked:
+      default: false
+      selector:
+        boolean:
+clear_checked:
+  fields:
+    entity_id:
+      required: true
+      example: todo.groceries
+      selector:
+        entity:
+          integration: hanc_shopping_list
+          domain: todo
+uncheck_all:
+  fields:
+    entity_id:
+      required: true
+      example: todo.groceries
+      selector:
+        entity:
+          integration: hanc_shopping_list
+          domain: todo

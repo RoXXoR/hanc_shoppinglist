@@ -1,0 +1,12 @@
+{
+  "domain": "hanc_shopping_list",
+  "name": "HANC Shopping List",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://github.com/roxxor/hanc_shoppinglist",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/roxxor/hanc_shoppinglist/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

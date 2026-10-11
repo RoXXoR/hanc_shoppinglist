@@ -1,0 +1,173 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mit Nextcloud verbinden",
+        "description": "Gib die URL deiner Nextcloud-Instanz an und wie du dich authentifizieren möchtest.",
+        "data": {
+          "url": "Nextcloud-URL",
+          "auth_method": "Authentifizierungsmethode",
+          "verify_ssl": "SSL-Zertifikat überprüfen"
+        },
+        "data_description": {
+          "auth_method": "Benutze Benutzer + App-Passwort für vollen Zugriff, oder einen öffentlichen geteilten Link der Shopping-List-App.",
+          "url": "Zum Beispiel https://cloud.example.com"
+        }
+      },
+      "account": {
+        "title": "Nextcloud-Konto",
+        "description": "Melde dich mit deinem Nextcloud-Benutzernamen und einem App-Passwort an (Nextcloud → Persönliche Einstellungen → App-Passwörter).",
+        "data": {
+          "username": "Benutzername",
+          "password": "App-Passwort"
+        }
+      },
+      "share": {
+        "title": "Öffentlicher Geteilter Link",
+        "description": "Füge den geteilten Link einer Einkaufsliste ein (oder nur das Token). Das Link-Passwort wird nur bei geschützten Links benötigt.",
+        "data": {
+          "token": "Geteilter Link oder Token",
+          "share_password": "Link-Passwort"
+        }
+      },
+      "lists": {
+        "title": "Einkaufslisten auswählen",
+        "description": "Wähle die Listen, die du nach Home Assistant importieren möchtest. Das lässt sich später in den Optionen ändern.",
+        "data": {
+          "list_ids": "Listen"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Erneut anmelden",
+        "description": "Nextcloud hat die gespeicherten Zugangsdaten abgelehnt. Bitte gib sie erneut ein.",
+        "data": {
+          "username": "Benutzername",
+          "password": "App-Passwort",
+          "token": "Geteilter Link oder Token",
+          "share_password": "Link-Passwort"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zu Nextcloud fehlgeschlagen",
+      "invalid_auth": "Ungültiger Benutzername oder App-Passwort",
+      "app_not_installed": "Die Shopping-List-App ist auf diesem Server nicht installiert oder aktiviert",
+      "share_not_found": "Geteilter Link nicht gefunden oder abgelaufen",
+      "share_password_required": "Dieser geteilte Link erfordert ein Passwort",
+      "share_read_only": "Dieser geteilte Link ist schreibgeschützt",
+      "unknown": "Unerwarteter Fehler"
+    },
+    "abort": {
+      "already_configured": "Dieses Nextcloud-Konto ist bereits konfiguriert",
+      "reauth_successful": "Erneute Authentifizierung erfolgreich"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HANC Shopping-List-Optionen",
+        "description": "Wähle, welche Listen synchronisiert werden und wie oft Nextcloud abgefragt wird.",
+        "data": {
+          "list_ids": "Listen",
+          "scan_interval": "Abfrageintervall (Sekunden)"
+        },
+        "data_description": {
+          "scan_interval": "Wie oft Home Assistant Nextcloud nach Updates fragt, zwischen 10 und 600 Sekunden."
+        }
+      }
+    }
+  },
+  "selector": {
+    "auth_method": {
+      "options": {
+        "account": "Nextcloud-Konto (Benutzer + App-Passwort)",
+        "share_link": "Öffentlicher Geteilter Link"
+      }
+    }
+  },
+  "services": {
+    "add_item": {
+      "name": "Artikel hinzufügen",
+      "description": "Fügt einem der synchronisierten Einkaufslisten einen Artikel hinzu.",
+      "fields": {
+        "entity_id": {
+          "name": "Liste",
+          "description": "Die Todo-Entität der Einkaufsliste.",
+          "selector": {
+            "entity": {
+              "integration": "hanc_shopping_list",
+              "domain": "todo"
+            }
+          }
+        },
+        "name": {
+          "name": "Name",
+          "description": "Name des Artikels, zum Beispiel \"Milch\".",
+          "selector": {
+            "text": {}
+          }
+        },
+        "quantity": {
+          "name": "Menge",
+          "description": "Menge des Artikels, zum Beispiel \"2\". Standard ist 1.",
+          "selector": {
+            "text": {}
+          }
+        },
+        "unit": {
+          "name": "Einheit",
+          "description": "Einheit des Artikels, zum Beispiel \"kg\".",
+          "selector": {
+            "text": {}
+          }
+        },
+        "area": {
+          "name": "Bereich",
+          "description": "Name eines vorhandenen Bereichs (Abteilung) dieser Liste, zum Beispiel \"Supermarkt\".",
+          "selector": {
+            "text": {}
+          }
+        },
+        "checked": {
+          "name": "Abgehakt",
+          "description": "Den Artikel bereits als erledigt hinzufügen.",
+          "selector": {
+            "boolean": {}
+          }
+        }
+      }
+    },
+    "clear_checked": {
+      "name": "Abgehakte löschen",
+      "description": "Löscht alle abgehakten Artikel von der Liste. Nur mit Kontoverbindung verfügbar.",
+      "fields": {
+        "entity_id": {
+          "name": "Liste",
+          "description": "Die Todo-Entität der Einkaufsliste.",
+          "selector": {
+            "entity": {
+              "integration": "hanc_shopping_list",
+              "domain": "todo"
+            }
+          }
+        }
+      }
+    },
+    "uncheck_all": {
+      "name": "Alle deaktivieren",
+      "description": "Hebt das Häkchen bei allen Artikeln der Liste auf. Nur mit Kontoverbindung verfügbar.",
+      "fields": {
+        "entity_id": {
+          "name": "Liste",
+          "description": "Die Todo-Entität der Einkaufsliste.",
+          "selector": {
+            "entity": {
+              "integration": "hanc_shopping_list",
+              "domain": "todo"
+            }
+          }
+        }
+      }
+    }
+  }
+}
