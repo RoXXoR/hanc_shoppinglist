@@ -11,7 +11,7 @@
         },
         "data_description": {
           "auth_method": "Use a user + app password for full access, or a public share link shared by the Shopping List app.",
-          "url": "For example https://cloud.example.com"
+          "url": "For example https://cloud.example.com. A full share link can be pasted here as well — it is recognised automatically."
         }
       },
       "account": {

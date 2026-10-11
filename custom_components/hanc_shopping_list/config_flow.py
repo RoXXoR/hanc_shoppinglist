@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any
 
 import voluptuous as vol
@@ -89,6 +90,16 @@ SHARE_SCHEMA = vol.Schema(
     }
 )
 
+# Shown when a share link was already parsed from a pasted URL: only the
+# (optional) link password is still needed.
+SHARE_PASSWORD_SCHEMA = vol.Schema(
+    {
+        vol.Optional(CONF_SHARE_PASSWORD): TextSelector(
+            TextSelectorConfig(type=TextSelectorType.PASSWORD)
+        ),
+    }
+)
+
 
 def _normalize_url(url: str) -> str:
     """Strip trailing slashes and add a scheme if missing."""
@@ -98,12 +109,31 @@ def _normalize_url(url: str) -> str:
     return url
 
 
+# A Nextcloud Shopping List share link: <base>/apps/shopping_list/s/<token>
+_SHARE_LINK_RE = re.compile(
+    r"^(?P<base>https?://.+?)/apps/shopping_list/s/(?P<token>[A-Za-z0-9]+)"
+)
+
+
 def _share_token_from_url(value: str) -> str:
     """Accept either a raw token or a full share URL."""
     value = value.strip()
     if "/s/" in value:
         return value.split("/s/", 1)[1].split("/", 1)[0].split("?", 1)[0]
     return value
+
+
+def _parse_share_url(value: str) -> tuple[str, str] | None:
+    """Split a share link into (nextcloud_base_url, token).
+
+    Handles Nextcloud installs in a subdirectory ("https://host/cloud/apps/
+    shopping_list/s/<token>" -> ("https://host/cloud", "<token>")). Returns
+    None when the value is not a share link.
+    """
+    match = _SHARE_LINK_RE.match(value.strip())
+    if match is None:
+        return None
+    return match.group("base").rstrip("/"), match.group("token")
 
 
 class HancShoppingListConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -126,9 +156,22 @@ class HancShoppingListConfigFlow(ConfigFlow, domain=DOMAIN):
         """Ask for server URL, auth method and TLS verification."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            self._url = _normalize_url(user_input[CONF_URL])
-            self._auth_method = user_input[CONF_AUTH_METHOD]
+            raw_url = user_input[CONF_URL].strip()
             self._verify_ssl = user_input[CONF_VERIFY_SSL]
+
+            # Convenience: a full share link pasted here is treated as a
+            # share connection, its base URL and token extracted for the user.
+            share = _parse_share_url(raw_url)
+            if share is not None:
+                self._url, self._token = share
+                self._auth_method = AUTH_METHOD_SHARE_LINK
+                _LOGGER.debug(
+                    "Detected a share link in the URL field (base %s)", self._url
+                )
+                return await self.async_step_share()
+
+            self._url = _normalize_url(raw_url)
+            self._auth_method = user_input[CONF_AUTH_METHOD]
             if self._auth_method == AUTH_METHOD_SHARE_LINK:
                 return await self.async_step_share()
             return await self.async_step_account()
@@ -174,8 +217,11 @@ class HancShoppingListConfigFlow(ConfigFlow, domain=DOMAIN):
         """Ask for a public share link (or raw token) and optional password."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            self._token = _share_token_from_url(user_input["token"])
+            if "token" in user_input:
+                self._token = _share_token_from_url(user_input["token"])
             self._share_password = user_input.get(CONF_SHARE_PASSWORD) or None
+
+        if self._token:
             try:
                 shared = await self._async_fetch_shared_list(
                     self._token, self._share_password
@@ -210,9 +256,10 @@ class HancShoppingListConfigFlow(ConfigFlow, domain=DOMAIN):
                     options={},
                 )
 
-        return self.async_show_form(
-            step_id="share", data_schema=SHARE_SCHEMA, errors=errors
-        )
+        # When the token is already known (pasted as a full link) only the
+        # optional password is still of interest to the user.
+        schema = SHARE_PASSWORD_SCHEMA if self._token else SHARE_SCHEMA
+        return self.async_show_form(step_id="share", data_schema=schema, errors=errors)
 
     async def async_step_lists(
         self, user_input: dict[str, Any] | None = None

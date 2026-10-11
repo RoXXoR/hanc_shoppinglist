@@ -53,6 +53,10 @@ Copy `custom_components/hanc_shopping_list` into your Home Assistant
 3. Choose which lists to import (all are preselected). Change the selection any time in
    the integration's **Options**.
 
+> 💡 **Tip:** you can paste the share link straight into the *URL* field of the first
+> step. It is recognised automatically — the Nextcloud base URL and the share token are
+> extracted for you, even for installs in a subdirectory (`https://host/cloud`).
+
 Entities are grouped under a device per Nextcloud account/share; each list provides:
 
 | Entity | Description |

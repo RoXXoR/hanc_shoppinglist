@@ -184,6 +184,8 @@ async def test_user_flow_share_password_required(
         result["flow_id"], {"token": "abc123token"}
     )
     assert result["errors"] == {"base": "share_password_required"}
+    # the token is already known, so only the password is asked for now
+    assert "token" not in result["data_schema"].schema
 
     # Now retry with the password, server accepts it
     aioclient_mock.clear_requests()
@@ -194,7 +196,7 @@ async def test_user_flow_share_password_required(
         {"title": "Party", "permission": 1},
     )
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {"token": "abc123token", "share_password": "hunter2"}
+        result["flow_id"], {"share_password": "hunter2"}
     )
     assert result["type"] == "create_entry"
     assert result["data"]["share_password"] == "hunter2"
@@ -291,3 +293,79 @@ async def test_options_flow_account_lists(
     )
     assert result["type"] == "create_entry"
     assert result["data"] == {"list_ids": ["1"], "scan_interval": 45}
+
+
+async def test_share_link_pasted_into_url_field(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A full share link pasted as the URL is understood as a share connection.
+
+    Regression test: this used to build an API base of
+    "<cloud>/apps/shopping_list/s/<token>/ocs/v2.php/..." which 404s, making
+    share links impossible to set up for Nextcloud installs in a subdirectory.
+    """
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    # the user pastes the share link into the URL field of a subdirectory
+    # install, so the API lives under ".../cloud/ocs/v2.php/..."
+    aioclient_mock.get(
+        "https://cloud.example.com/cloud/ocs/v2.php/apps/shopping_list/api/v1"
+        "/public/abc123token",
+        params={"format": "json"},
+        json=ocs({"title": "Party", "permission": 1}),
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {
+            "url": "https://cloud.example.com/cloud/apps/shopping_list/s/abc123token",
+            "auth_method": "account",  # even when "account" was picked
+            "verify_ssl": True,
+        },
+    )
+
+    assert result["type"] == "create_entry"
+    assert result["data"]["url"] == "https://cloud.example.com/cloud"
+    assert result["data"]["token"] == "abc123token"
+    assert result["data"]["auth_method"] == AUTH_METHOD_SHARE_LINK
+
+
+async def test_share_link_in_url_field_asks_for_protected_password(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A protected share pasted as URL asks only for the link password."""
+    aioclient_mock.get(
+        f"{API}/public/abc123token",
+        params={"format": "json"},
+        status=403,
+        json=ocs({"passwordRequired": True}, 403),
+    )
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {
+            "url": "https://cloud.example.com/apps/shopping_list/s/abc123token",
+            "auth_method": "share_link",
+            "verify_ssl": True,
+        },
+    )
+    assert result["type"] == "form"
+    assert result["errors"] == {"base": "share_password_required"}
+    # the token field is gone, only the password is asked for
+    assert "token" not in result["data_schema"].schema
+
+    aioclient_mock.clear_requests()
+    mock_ocs(
+        aioclient_mock,
+        "GET",
+        "/public/abc123token",
+        {"title": "Party", "permission": 1},
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"share_password": "hunter2"}
+    )
+    assert result["type"] == "create_entry"
+    assert result["data"]["share_password"] == "hunter2"

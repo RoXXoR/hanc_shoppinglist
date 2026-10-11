@@ -328,3 +328,36 @@ async def test_share_list_metadata(
 
     assert shared.title == "Party"
     assert shared.writable is True
+
+
+async def test_delete_accepts_empty_204(
+    hass: HomeAssistant,
+    account_client: ShoppingListApiClient,
+    aioclient_mock: AiohttpClientMocker,
+) -> None:
+    """Nextcloud answers deletes with 204 No Content and no body."""
+    aioclient_mock.delete(
+        f"{API}/lists/1/items/10",
+        params={"format": "json"},
+        status=204,
+        text="",
+    )
+
+    # must not raise "Non-JSON response"
+    await account_client.async_delete_item(1, 10)
+
+
+async def test_share_delete_accepts_empty_204(
+    hass: HomeAssistant,
+    share_client: ShoppingListApiClient,
+    aioclient_mock: AiohttpClientMocker,
+) -> None:
+    """The public API behaves the same for deletes."""
+    aioclient_mock.delete(
+        f"{API}/public/abc123token/items/10",
+        params={"format": "json"},
+        status=204,
+        text="",
+    )
+
+    await share_client.async_delete_shared_item(10)

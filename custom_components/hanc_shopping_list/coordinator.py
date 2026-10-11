@@ -163,6 +163,15 @@ class HancShoppingListCoordinator(DataUpdateCoordinator[dict[str, ListState]]):
     # ------------------------------------------------------------------
     # Write helpers used by entities and services
     # ------------------------------------------------------------------
+    async def async_refresh_after_write(self) -> None:
+        """Refresh immediately after a local write.
+
+        Uses the undebounced refresh: the debouncer would coalesce writes made
+        in quick succession and could leave the entities showing stale data for
+        up to its cooldown, which breaks the "always in sync" promise.
+        """
+        await self.async_refresh()
+
     async def async_add_item(
         self,
         key: str,
@@ -191,7 +200,7 @@ class HancShoppingListCoordinator(DataUpdateCoordinator[dict[str, ListState]]):
                 shop_area_id=area_id,
                 checked=checked,
             )
-        await self.async_request_refresh()
+        await self.async_refresh_after_write()
 
     async def async_set_checked(self, key: str, item_id: int, checked: bool) -> None:
         """Check or uncheck an item and refresh immediately."""
@@ -201,7 +210,7 @@ class HancShoppingListCoordinator(DataUpdateCoordinator[dict[str, ListState]]):
             )
         else:
             await self.client.async_set_checked(int(key), item_id, checked)
-        await self.async_request_refresh()
+        await self.async_refresh_after_write()
 
     async def async_update_item(
         self,
@@ -221,7 +230,7 @@ class HancShoppingListCoordinator(DataUpdateCoordinator[dict[str, ListState]]):
             await self.client.async_update_item(
                 int(key), item_id, name=name, quantity=quantity, unit=unit
             )
-        await self.async_request_refresh()
+        await self.async_refresh_after_write()
 
     async def async_reorder(self, key: str, sorted_ids: list[int]) -> None:
         """Persist a new item order and refresh immediately."""
@@ -229,7 +238,7 @@ class HancShoppingListCoordinator(DataUpdateCoordinator[dict[str, ListState]]):
             await self.client.async_reorder_shared_items(sorted_ids)
         else:
             await self.client.async_reorder_items(int(key), sorted_ids)
-        await self.async_request_refresh()
+        await self.async_refresh_after_write()
 
     async def async_delete_item(self, key: str, item_id: int) -> None:
         """Delete an item and refresh immediately."""
@@ -237,17 +246,17 @@ class HancShoppingListCoordinator(DataUpdateCoordinator[dict[str, ListState]]):
             await self.client.async_delete_shared_item(item_id)
         else:
             await self.client.async_delete_item(int(key), item_id)
-        await self.async_request_refresh()
+        await self.async_refresh_after_write()
 
     async def async_clear_checked(self, key: str) -> None:
         """Delete all checked items (account mode only)."""
         await self.client.async_clear_checked(int(key))
-        await self.async_request_refresh()
+        await self.async_refresh_after_write()
 
     async def async_uncheck_all(self, key: str) -> None:
         """Uncheck every item (account mode only)."""
         await self.client.async_uncheck_all(int(key))
-        await self.async_request_refresh()
+        await self.async_refresh_after_write()
 
     # ------------------------------------------------------------------
     # Helpers for entities

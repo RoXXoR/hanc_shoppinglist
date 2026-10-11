@@ -138,6 +138,12 @@ class ShoppingListApiClient:
                     raise self._auth_error()
 
                 body = await self._decode_body(response)
+
+                # Nextcloud answers deletes with "204 No Content" and an
+                # empty body: treat any empty 2xx as success.
+                if body is _NOT_OCS and response.status < 300:
+                    return None
+
                 if body is _NOT_OCS:
                     if response.status == 404:
                         raise NotFoundError(
