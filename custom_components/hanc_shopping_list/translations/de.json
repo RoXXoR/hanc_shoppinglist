@@ -92,48 +92,27 @@
       "fields": {
         "entity_id": {
           "name": "Liste",
-          "description": "Die Todo-Entität der Einkaufsliste.",
-          "selector": {
-            "entity": {
-              "integration": "hanc_shopping_list",
-              "domain": "todo"
-            }
-          }
+          "description": "Die Todo-Entität der Einkaufsliste."
         },
         "name": {
           "name": "Name",
-          "description": "Name des Artikels, zum Beispiel \"Milch\".",
-          "selector": {
-            "text": {}
-          }
+          "description": "Name des Artikels, zum Beispiel \"Milch\"."
         },
         "quantity": {
           "name": "Menge",
-          "description": "Menge des Artikels, zum Beispiel \"2\". Standard ist 1.",
-          "selector": {
-            "text": {}
-          }
+          "description": "Menge des Artikels, zum Beispiel \"2\". Standard ist 1."
         },
         "unit": {
           "name": "Einheit",
-          "description": "Einheit des Artikels, zum Beispiel \"kg\".",
-          "selector": {
-            "text": {}
-          }
+          "description": "Einheit des Artikels, zum Beispiel \"kg\"."
         },
         "area": {
           "name": "Bereich",
-          "description": "Name eines vorhandenen Bereichs (Abteilung) dieser Liste, zum Beispiel \"Supermarkt\".",
-          "selector": {
-            "text": {}
-          }
+          "description": "Name eines vorhandenen Bereichs (Abteilung) dieser Liste, zum Beispiel \"Supermarkt\"."
         },
         "checked": {
           "name": "Abgehakt",
-          "description": "Den Artikel bereits als erledigt hinzufügen.",
-          "selector": {
-            "boolean": {}
-          }
+          "description": "Den Artikel bereits als erledigt hinzufügen."
         }
       }
     },
@@ -143,13 +122,7 @@
       "fields": {
         "entity_id": {
           "name": "Liste",
-          "description": "Die Todo-Entität der Einkaufsliste.",
-          "selector": {
-            "entity": {
-              "integration": "hanc_shopping_list",
-              "domain": "todo"
-            }
-          }
+          "description": "Die Todo-Entität der Einkaufsliste."
         }
       }
     },
@@ -159,13 +132,7 @@
       "fields": {
         "entity_id": {
           "name": "Liste",
-          "description": "Die Todo-Entität der Einkaufsliste.",
-          "selector": {
-            "entity": {
-              "integration": "hanc_shopping_list",
-              "domain": "todo"
-            }
-          }
+          "description": "Die Todo-Entität der Einkaufsliste."
         }
       }
     }

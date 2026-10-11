@@ -22,3 +22,6 @@ jobs:
         uses: hacs/action@main
         with:
           category: integration
+          # brands/topics are only required for the HACS default store,
+          # not for installation as a custom repository.
+          ignore: brands topics
